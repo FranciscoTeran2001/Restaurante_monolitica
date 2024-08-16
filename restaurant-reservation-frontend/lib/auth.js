@@ -1,19 +1,26 @@
-import axios from 'axios';
+// lib/auth.js
+import { getCookie, setCookie, removeCookie } from './cookies';
 
-const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
-});
-
-export const login = async (email, password) => {
-  const response = await api.post('/auth/login', { email, password });
-  localStorage.setItem('token', response.data.access_token);
-  return response.data;
+export const login = (token, user) => {
+  setCookie('token', token, { expires: 7 }); // La cookie expirará en 7 días
+  setCookie('user', JSON.stringify(user), { expires: 7 });
 };
 
 export const logout = () => {
-  localStorage.removeItem('token');
+  removeCookie('token');
+  removeCookie('user');
 };
 
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
+export const isAuthenticated = (req) => {
+  return !!getCookie('token', req);
+};
+
+export const getUserRole = (req) => {
+  const user = getCookie('user', req);
+  return user ? JSON.parse(user).role : null;
+};
+
+export const getCurrentUser = (req) => {
+  const user = getCookie('user', req);
+  return user ? JSON.parse(user) : null;
 };
